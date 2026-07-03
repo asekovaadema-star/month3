@@ -38,10 +38,9 @@ async def get_group(message: Message):
 async def get_group(message: Message):
     await message.answer("C# — мощный, объектно-ориентированный язык от компании Microsoft со строгой статической типизацией")
 
-@router.callback_query(F.data == "Начать обучение")
+@router.callback_query(F.data == "start_lern")
 async def process_start_learning(callback: CallbackQuery):
-    await callback.answer(
-        text="Начинаем обучение!",
+    await callback.answer("Начинаем обучение!",
         show_alert=True
     )
 
