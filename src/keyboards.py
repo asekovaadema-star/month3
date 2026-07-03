@@ -22,4 +22,3 @@ inline = InlineKeyboardMarkup(inline_keyboard=[
     callback_data="c#")],
     [InlineKeyboardButton(text= "Начать обучение", callback_data="start_lern")]
 ])
-
