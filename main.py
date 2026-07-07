@@ -1,14 +1,14 @@
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher, F
-
+from aiogram.fsm.storage.memory import MemoryStorage
 from src.handlers import router
 
 from config import BOT_TOKEN
 
 
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()     # обработчик входящих обновлений
+dp = Dispatcher(storage=MemoryStorage())     # обработчик входящих обновлений
 
 async def main():
     dp.include_router(router)
