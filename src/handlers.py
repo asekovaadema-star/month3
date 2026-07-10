@@ -5,6 +5,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from src.keyboards import inline_2, inline, CallbackQuery
 from src.questions import QUESTIONS
+from db.users import create_user, get_user
+from db.questions import (add_question, 
+                          get_all_questions,
+                          delete_question)
+from db.results import get_score, save_result
 
 router = Router()
 
@@ -13,6 +18,10 @@ class Quiz(StatesGroup):
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
+    user = create_user(
+        telegram_id = message.from_user.id,
+        username= message.from_user.username or "Unknown"
+    )
     await message.answer(
         f"Привет, {message.from_user.first_name}! Я твой первый бот."
         )
@@ -33,6 +42,53 @@ async def cmd_about(message: Message):
         f"Этот бот создан как тестовый образец."
     )
 
+
+'''---HOMEWORK #5 ---'''
+@router.message(Command('list'))
+async def cmd_list(message:Message):
+    questions = get_all_questions()
+    if not questions:
+        await message.answer("Пока нет вопросов")
+        return 
+    
+    lines = []
+    lines.append("Список всех вопросов:\n")
+    
+    for r in questions:
+        id = r[0]
+        text = r[1]
+        answer = r[2]
+        lines.append(f"{id}. Вопрос: {text} / Ответ: {answer}")
+
+    full_message = "\n".join(lines)
+    await message.answer(full_message)
+
+@router.message(Command("add"))
+async def cmd_add(message: Message):
+    text_parts = message.text.split()
+    if len(text_parts) < 3:
+        await message.answer("Напишите : /add Вопрос Ответ")
+        return
+        
+    question_text = text_parts[1]
+    correct_answer = text_parts[2]
+
+    add_question(question_text, correct_answer)
+    await message.answer("Вопрос добавлен!")
+
+
+@router.message(Command("del"))
+async def cmd_del(message: Message):
+    text_parts = message.text.split()
+    if len(text_parts) < 2:
+        await message.answer("Напиши ID. Пример: /del 5")
+        return
+        
+    question_id = int(text_parts[1]) 
+    delete_question(question_id)
+    await message.answer(f"Вопрос с ID {question_id} удален!")
+
+#homework #4 
 @router.message(Command("game"))
 async def cmd_game(message: Message):
     await message.answer(
