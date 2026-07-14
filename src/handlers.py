@@ -8,8 +8,12 @@ from src.questions import QUESTIONS
 from db.users import create_user, get_user
 from db.questions import (add_question, 
                           get_all_questions,
-                          delete_question)
-from db.results import get_score, save_result
+                          delete_question
+                          )
+from db.results import (get_score,
+                        save_result,
+                        update_user_score,
+                        get_top_users)
 
 router = Router()
 
@@ -95,40 +99,119 @@ async def cmd_game(message: Message):
         f"Выберите один пункт:", reply_markup= inline
     )
 
+#--HW 4 --
+# @router.callback_query(F.data == 'quiz_start')
+# async def start_quiz(callback: CallbackQuery, state: FSMContext):
+#     await callback.answer('Начинаем игру!', show_alert=True)
+#     await state.update_data(index=0, score=0)
+#     await state.set_state(Quiz.waiting_answer)
+#     await callback.message.answer(f"Вопрос 1: {QUESTIONS[0]['q']}")
+
+
+# @router.message(Quiz.waiting_answer)  
+# async def handle_answer(message: Message, state: FSMContext):
+#     data = await state.get_data()
+#     index = data['index']
+#     score = data['score']
+
+#     if message.text.lower() == QUESTIONS[index]['a']:
+#         score += 1
+#         await message.answer("Правильно! +1")
+#     else:
+#         await message.answer(f"Неправильно. Правильный ответ: {QUESTIONS[index]['a']}")
+    
+#     index += 1
+
+#     if index >= len(QUESTIONS):
+#         await message.answer(f"Конец! Счет: {score}/{len(QUESTIONS)}", reply_markup=inline_2)
+#         await state.clear()
+#     else:
+#         await state.update_data(index=index, score=score)
+#         await message.answer(f"Вопрос {index+1}: {QUESTIONS[index]['q']}")
+
+# @router.callback_query(F.data == "play_again")
+# async def restart_quiz(callback: CallbackQuery, state: FSMContext):
+#     await callback.answer("Играем снова", show_alert= True)
+#     await callback.message.answer("Начали повторно викторину")
+#     await state.set_state(Quiz.waiting_answer)
+#     await callback.message.answer(f"Вопрос 1: {QUESTIONS[0]['q']}")
+
+#FSM - Final State Machine
+
+
+#---HOME WORK #6 --
+@router.message(Command("rating"))
+async def cmd_rating(message: Message):
+    top_players = get_top_users()
+    if not top_players:
+        await message.answer("Рейтинг пока пуст")
+        return
+        
+    lines = []
+    lines.append("ТОП-3 ИГРОКОВ ВИКТОРИНЫ:\n")
+    for index, player in enumerate(top_players, start=1):
+        name = player[0]
+        score = player[1]
+        
+        lines.append(f"{index} место: {name} — {score} очков")
+        
+    full_message = "\n".join(lines)
+    await message.answer(full_message)
+
+
+@router.callback_query(F.data == "my_score")
+async def cmd_score(callback: CallbackQuery):
+    user = get_user(callback.from_user.id)
+    if not user:
+        await callback.answer("Тебя нету в БД")
+        await callback.message.answer("Сначала напиши /start")
+        return
+    data = get_score(user['id'])
+    await callback.answer("Мы тебя нашли!", show_alert=True)
+    await callback.message.answer(f"Твой счет: {data["correct"] or 0}/{data["total"] or 0}")
+
+
+
 @router.callback_query(F.data == 'quiz_start')
 async def start_quiz(callback: CallbackQuery, state: FSMContext):
-    await callback.answer('Начинаем игру!', show_alert=True)
-    await state.update_data(index=0, score=0)
+    await callback.answer('Начинаем игру!!!', show_alert=True)
+    questions = get_all_questions()     # тянем из БД
+    
+    if not questions:
+        await callback.message.answer("Вопросов нет в базе...")
+        return
+    
+    await state.update_data(questions=questions, index=0, score=0)
     await state.set_state(Quiz.waiting_answer)
-    await callback.message.answer(f"Вопрос 1: {QUESTIONS[0]['q']}")
+    await callback.message.answer(f"Вопрос 1: {questions[0]["question_text"]}")
 
 
 @router.message(Quiz.waiting_answer)  
 async def handle_answer(message: Message, state: FSMContext):
     data = await state.get_data()
+    questions = data['questions']
     index = data['index']
     score = data['score']
+    user = get_user(message.from_user.id)
+    q = questions[index]
 
-    if message.text.lower() == QUESTIONS[index]['a']:
+    is_correct = message.text.lower() == q['correct_answer']
+    save_result(
+        user_id=user['id'],
+        question_id=q['id'],
+        is_correct=is_correct
+    )
+
+    if is_correct:
         score += 1
-        await message.answer("Правильно! +1")
+        await message.answer('Правильно +1')
     else:
-        await message.answer(f"Неправильно. Правильный ответ: {QUESTIONS[index]['a']}")
+        await message.answer(f'Неверно. Правильный ответ: {q['correct_answer']}')
     
     index += 1
-
-    if index >= len(QUESTIONS):
-        await message.answer(f"Конец! Счет: {score}/{len(QUESTIONS)}", reply_markup=inline_2)
+    if index >= len(questions):
+        await message.answer(f"Конец! Счет: {score}/{len(questions)}")
         await state.clear()
-    else:
+    else: 
         await state.update_data(index=index, score=score)
-        await message.answer(f"Вопрос {index+1}: {QUESTIONS[index]['q']}")
-
-@router.callback_query(F.data == "play_again")
-async def restart_quiz(callback: CallbackQuery, state: FSMContext):
-    await callback.answer("Играем снова", show_alert= True)
-    await callback.message.answer("Начали повторно викторину")
-    await state.set_state(Quiz.waiting_answer)
-    await callback.message.answer(f"Вопрос 1: {QUESTIONS[0]['q']}")
-
-#FSM - Final State Machine
+        await message.answer(f"Вопрос {index+1}: {questions[index]["question_text"]}")

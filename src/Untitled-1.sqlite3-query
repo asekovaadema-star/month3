@@ -1,0 +1,8 @@
+-- database: /home/user/geeks/month3/db/quiz.db
+
+SELECT username, question_text, is_correct 
+FROM results
+INNER JOIN users
+    ON users.id = results.user_id
+INNER JOIN questions
+    ON questions.id = results.question_id;

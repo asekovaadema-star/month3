@@ -51,3 +51,11 @@ INSERT_QUESTIONS = "INSERT INTO questions(question_text, correct_answer) VALUES 
 SELECT_ALL_QUESTIONS = "SELECT * FROM questions "
 
 DELETE_QUESTION = "DELETE FROM questions WHERE id= ?"
+
+#--LESSON 6 ---
+GET_QUESTION_BY_ID = 'SELECT * FROM questions WHERE id = ?'
+
+#--HOMEWORK#6 --
+UPDATE_USER_SCORE = 'INSERT INTO users (telegram_id, username, score) VALUES (?, ?, 1) ON CONFLICT(telegram_id) DO UPDATE SET score = score + 1'
+
+SELECT_TOP_USERS = "SELECT username, score FROM users ORDER BY score DESC LIMIT 3"
