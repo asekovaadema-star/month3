@@ -3,9 +3,7 @@ from db.database import get_db
 from db.queries import(INSERT_QUESTIONS, 
                        SELECT_ALL_QUESTIONS,
                        DELETE_QUESTION,
-                       GET_QUESTION_BY_ID,
-                       UPDATE_USER_SCORE,
-                       SELECT_TOP_USERS)
+                       GET_QUESTION_BY_ID)
 
 def add_question(question_text:str, corrcet_answer:str):
     conn = get_db()
@@ -30,4 +28,4 @@ def delete_question(id: int):
     conn.execute( DELETE_QUESTION,(id, ))
     conn.commit()
     conn.close()
-
+    

@@ -143,20 +143,19 @@ async def cmd_game(message: Message):
 @router.message(Command("rating"))
 async def cmd_rating(message: Message):
     top_players = get_top_users()
+    
     if not top_players:
         await message.answer("Рейтинг пока пуст")
         return
-        
-    lines = []
-    lines.append("ТОП-3 ИГРОКОВ ВИКТОРИНЫ:\n")
-    for index, player in enumerate(top_players, start=1):
+    
+    text = "ТОП-3 ИГРОКОВ ВИКТОРИНЫ:\n\n"
+    
+    for i, player in enumerate(top_players, start=1):
         name = player[0]
         score = player[1]
-        
-        lines.append(f"{index} место: {name} — {score} очков")
-        
-    full_message = "\n".join(lines)
-    await message.answer(full_message)
+
+        text += f"{i} место: {name} — {score} очков\n"
+    await message.answer(text)
 
 
 @router.callback_query(F.data == "my_score")

@@ -59,3 +59,17 @@ GET_QUESTION_BY_ID = 'SELECT * FROM questions WHERE id = ?'
 UPDATE_USER_SCORE = 'INSERT INTO users (telegram_id, username, score) VALUES (?, ?, 1) ON CONFLICT(telegram_id) DO UPDATE SET score = score + 1'
 
 SELECT_TOP_USERS = "SELECT username, score FROM users ORDER BY score DESC LIMIT 3"
+
+
+# SELECT столбцы
+# FROM таблица1
+#     [INNER] JOIN таблица2
+#     ON условие1
+#     [[INNER] JOIN таблица3
+#     ON условие2]
+
+
+# GET_HISTORY = '''
+#         SELECT ques
+
+# '''
