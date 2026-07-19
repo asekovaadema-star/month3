@@ -14,6 +14,7 @@ from db.results import (get_score,
                         save_result,
                         update_user_score,
                         get_top_users)
+from db.stats import get_history
 
 router = Router()
 
@@ -45,6 +46,18 @@ async def cmd_about(message: Message):
     await message.answer(
         f"Этот бот создан как тестовый образец."
     )
+
+@router.message(Command('history'))
+async def cmd_history(message:Message):
+    history = get_history(message.from_user.id)
+    if not history:
+        await message.answer('Ты еще не отвечал на вопросы.')
+        return
+    text = "Последние отчеты: \n\n"
+    for i, row in enumerate(history, 1):
+        mark = 'Верно' if row ['is_correct'] else 'Неверно'
+        text += f'{1}. {mark} - {row['question_text']}\n'
+    await message.answer(text)
 
 
 '''---HOMEWORK #5 ---'''

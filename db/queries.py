@@ -61,15 +61,17 @@ UPDATE_USER_SCORE = 'INSERT INTO users (telegram_id, username, score) VALUES (?,
 SELECT_TOP_USERS = "SELECT username, score FROM users ORDER BY score DESC LIMIT 3"
 
 
-# SELECT столбцы
-# FROM таблица1
-#     [INNER] JOIN таблица2
-#     ON условие1
-#     [[INNER] JOIN таблица3
-#     ON условие2]
 
-
-# GET_HISTORY = '''
-#         SELECT ques
-
-# '''
+GET_HISTORY = '''
+        SELECT q.question_text, r.is_correct 
+        FROM results AS r
+        INNER JOIN users AS u 
+            ON u.id = r.user_id 
+        
+        INNER JOIN question AS q
+            ON q.id = r.question_id
+        
+        WHERE r.telegram_id = ?
+        ORDER BY r.id DESC 
+        LIMIT 5
+ '''

@@ -1,8 +1,18 @@
 -- database: /home/user/geeks/month3/db/quiz.db
 
-SELECT username, question_text, is_correct 
-FROM results
-INNER JOIN users
-    ON users.id = results.user_id
-INNER JOIN questions
-    ON questions.id = results.question_id;
+select * from questions 
+ORDER BY question_text, correct_answer
+LIMIT 2;
+
+SELECT q.question_text, r.is_correct 
+FROM results AS r
+INNER JOIN users AS u
+    ON u.id = r.user_id
+INNER JOIN questions AS q
+    ON q.id = r.question_id
+
+WHERE r.user_id = 1
+ORDER BY r.id DESC
+
+
+
